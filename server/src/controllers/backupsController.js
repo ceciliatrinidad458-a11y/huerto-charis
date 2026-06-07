@@ -1,8 +1,8 @@
 const db = require('../db');
 const PDFDocument = require('pdfkit');
-const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
+const { Resend } = require('resend');
 
 const getBackupDir = () => {
   const backupDir = path.join(__dirname, '../../backups');
@@ -276,35 +276,23 @@ doc.end();
       let emailError = null;
 
       try {
-        if (process.env.ADMIN_EMAIL && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  family: 4,
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+        if (process.env.ADMIN_EMAIL &&   process.env.RESEND_API_KEY ) {
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+await resend.emails.send({
+  from: 'Huerto Charis <onboarding@resend.dev>',
+  to: process.env.ADMIN_EMAIL,
+  subject: 'Respaldo de información - Huerto Charis',
+  text: 'Se adjunta el respaldo generado del sistema Huerto Charis.',
+  attachments: [
+    {
+      filename: fileName,
+      content: fs.readFileSync(filePath).toString('base64')
+    }
+  ]
 });
 
-          await transporter.sendMail({
-            from: `"Huerto Charis" <${process.env.EMAIL_USER}>`,
-            to: process.env.ADMIN_EMAIL,
-            subject: 'Respaldo de información - Huerto Charis',
-            text: 'Se adjunta el respaldo generado del sistema Huerto Charis.',
-            attachments: [
-              {
-                filename: fileName,
-                path: filePath
-              }
-            ]
-          });
-
-          enviadoCorreo = true;
+enviadoCorreo = true;
         }
       } catch (err) {
         emailError = err.message;
