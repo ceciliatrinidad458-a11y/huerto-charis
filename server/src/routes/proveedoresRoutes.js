@@ -12,11 +12,13 @@ const {
   update,
   remove,
   registrarCompra,
-  getCompras
+  getCompras,
+  getCompraDetalle
 } = require('../controllers/proveedoresController');
 
 router.get('/', auth, soloAdmin, getAll);
 router.get('/compras', auth, soloAdmin, getCompras);
+router.get('/compras/:id', auth, soloAdmin, getCompraDetalle);
 
 router.post('/', auth, soloAdmin, create);
 router.put('/:id', auth, soloAdmin, update);

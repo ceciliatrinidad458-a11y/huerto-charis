@@ -200,6 +200,37 @@ const getCompras = async (req, res) => {
     });
   }
 };
+const getCompraDetalle = async (req, res) => {
+  try {
+    const compraResult = await db.query(`
+      SELECT cp.*, p.nombre AS proveedor_nombre, u.nombre AS usuario_nombre
+      FROM compras_proveedor cp
+      LEFT JOIN proveedores p ON cp.id_proveedor = p.id
+      LEFT JOIN usuarios u ON cp.id_usuario = u.id
+      WHERE cp.id = $1
+    `, [req.params.id]);
+
+    if (compraResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Compra no encontrada' });
+    }
+
+    const detalleResult = await db.query(`
+      SELECT *
+      FROM detalle_compras
+      WHERE id_compra = $1
+    `, [req.params.id]);
+
+    res.json({
+      ...compraResult.rows[0],
+      detalle: detalleResult.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: 'Error al obtener detalle de compra',
+      error: err.message
+    });
+  }
+};
 
 module.exports = {
   getAll,
@@ -207,5 +238,6 @@ module.exports = {
   update,
   remove,
   registrarCompra,
-  getCompras
+  getCompras,
+  getCompraDetalle
 };

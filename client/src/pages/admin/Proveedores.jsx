@@ -18,6 +18,8 @@ import {
 const emptyProv = { nombre: '', telefono: '', correo: '', direccion: '' };
 
 export default function Proveedores() {
+  const [compraDetalle, setCompraDetalle] = useState(null);
+  const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [tab, setTab] = useState(0);
   const [proveedores, setProveedores] = useState([]);
   const [compras, setCompras] = useState([]);
@@ -31,7 +33,14 @@ export default function Proveedores() {
   const [items, setItems] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-
+  const [openNuevoProducto, setOpenNuevoProducto] = useState(false);
+const [nuevoProducto, setNuevoProducto] = useState({
+  nombre: '',
+  cantidad: '',
+  precio_menudista: '',
+  precio_mayorista: '',
+  precio_especial: ''
+});
   const loadProveedores = () => api.get('/proveedores').then(res => setProveedores(res.data));
   const loadCompras = () => api.get('/proveedores/compras').then(res => setCompras(res.data));
 
@@ -79,6 +88,19 @@ export default function Proveedores() {
     );
   }
 };
+const handleVerDetalleCompra = async (compra) => {
+  setLoadingDetalle(true);
+  setCompraDetalle({ ...compra, detalle: [] });
+
+  try {
+    const res = await api.get(`/proveedores/compras/${compra.id}`);
+    setCompraDetalle(res.data);
+  } catch (err) {
+    alertaError(err.response?.data?.message || 'Error al obtener detalle de compra');
+  } finally {
+    setLoadingDetalle(false);
+  }
+};
 
   const agregarItemCompra = (producto) => {
     if (!producto) return;
@@ -86,6 +108,73 @@ export default function Proveedores() {
     if (existe) setItems(items.map(i => i.id_producto === producto.id ? { ...i, cantidad: i.cantidad + 1 } : i));
     else setItems([...items, { id_producto: producto.id, nombre_producto: producto.nombre, cantidad: 1, precio_unitario: 0 }]);
   };
+  const handleCrearProductoDesdeCompra = async () => {
+  if (!nuevoProducto.nombre) return setError('El nombre del producto es requerido');
+
+  const cantidad = Number(nuevoProducto.cantidad || 0);
+  const menudista = Number(nuevoProducto.precio_menudista || 0);
+  const mayorista = Number(nuevoProducto.precio_mayorista || 0);
+  const especial = Number(nuevoProducto.precio_especial || 0);
+
+  if (cantidad <= 0) return setError('La cantidad inicial debe ser mayor a 0');
+  if (menudista <= 0 || mayorista <= 0 || especial <= 0) {
+    return setError('Todos los precios deben ser mayores a 0');
+  }
+
+  if (menudista <= mayorista || menudista <= especial) {
+    return setError('El precio menudista debe ser mayor al mayorista y especial');
+  }
+
+  if (especial >= mayorista) {
+    return setError('El precio especial debe ser menor al precio mayorista');
+  }
+
+  setSaving(true);
+  setError('');
+
+  try {
+    await api.post('/productos', {
+      nombre: nuevoProducto.nombre,
+      cantidad,
+      precio_menudista: menudista,
+      precio_mayorista: mayorista,
+      precio_especial: especial
+    });
+
+    const res = await api.get('/productos');
+    setProductos(res.data);
+
+    const creado = res.data.find(
+      p => p.nombre.toLowerCase() === nuevoProducto.nombre.toLowerCase()
+    );
+
+    if (creado) {
+      setItems(prev => [
+        ...prev,
+        {
+          id_producto: creado.id,
+          nombre_producto: creado.nombre,
+          cantidad,
+          precio_unitario: 0
+        }
+      ]);
+    }
+
+    setNuevoProducto({
+      nombre: '',
+      cantidad: '',
+      precio_menudista: '',
+      precio_mayorista: '',
+      precio_especial: ''
+    });
+
+    setOpenNuevoProducto(false);
+  } catch (err) {
+    setError(err.response?.data?.message || 'Error al crear producto');
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleSaveCompra = async () => {
     if (!compraForm.id_proveedor) return setError('Selecciona un proveedor');
@@ -178,7 +267,70 @@ export default function Proveedores() {
                 </TableHead>
                 <TableBody>
                   {compras.map((c) => (
-                    <TableRow key={c.id} hover>
+                    <TableRow
+  key={c.id}
+  hover
+  onDoubleClick={() => handleVerDetalleCompra(c)}
+  sx={{ cursor: 'pointer' }}
+>
+  <Dialog open={!!compraDetalle} onClose={() => setCompraDetalle(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+  <DialogTitle sx={{ fontWeight: 700, color: '#1B5E20' }}>
+    Detalle de compra #{compraDetalle?.id}
+  </DialogTitle>
+
+  <DialogContent>
+    {loadingDetalle ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+        <CircularProgress sx={{ color: '#2E7D32' }} />
+      </Box>
+    ) : compraDetalle && (
+      <Box>
+        <Typography variant="body2"><strong>Proveedor:</strong> {compraDetalle.proveedor_nombre || '—'}</Typography>
+        <Typography variant="body2"><strong>Registró:</strong> {compraDetalle.usuario_nombre || '—'}</Typography>
+        <Typography variant="body2"><strong>Fecha:</strong> {new Date(compraDetalle.fecha).toLocaleString('es-MX')}</Typography>
+        <Typography variant="body2"><strong>Notas:</strong> {compraDetalle.notas || '—'}</Typography>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Table size="small">
+          <TableHead>
+            <TableRow sx={{ bgcolor: '#F1F8E9' }}>
+              <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>Producto</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>Cantidad</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>Precio</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>Subtotal</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {compraDetalle.detalle?.map((d, i) => (
+              <TableRow key={i}>
+                <TableCell>{d.nombre_producto}</TableCell>
+                <TableCell>{d.cantidad}</TableCell>
+                <TableCell>{fmt(d.precio_unitario)}</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#2E7D32' }}>
+                  {fmt(Number(d.precio_unitario || 0) * Number(d.cantidad || 0))}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Typography variant="h6" fontWeight={700} color="#1B5E20">
+            Total: {fmt(compraDetalle.total)}
+          </Typography>
+        </Box>
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button onClick={() => setCompraDetalle(null)} sx={{ color: 'text.secondary' }}>
+      Cerrar
+    </Button>
+  </DialogActions>
+</Dialog>n
                       <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>#{c.id}</TableCell>
                       <TableCell sx={{ fontWeight: 500 }}>{c.proveedor_nombre}</TableCell>
                       <TableCell>{c.usuario_nombre}</TableCell>
@@ -234,8 +386,128 @@ export default function Proveedores() {
           </Grid>
 
           <Divider sx={{ my: 2 }} />
-          <Typography variant="subtitle2" fontWeight={700} color="#1B5E20" mb={1.5}>Productos recibidos</Typography>
-          <Autocomplete options={productos} getOptionLabel={(p) => p.nombre}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+  <Typography variant="subtitle2" fontWeight={700} color="#1B5E20">
+    Productos recibidos
+  </Typography>
+
+  <Button
+    size="small"
+    variant="outlined"
+    startIcon={<AddIcon />}
+    onClick={() => {
+      setError('');
+      setOpenNuevoProducto(true);
+    }}
+    sx={{
+      borderColor: '#2E7D32',
+      color: '#2E7D32',
+      borderRadius: 2
+    }}
+  >
+    Nuevo producto
+  </Button>
+</Box>
+<Dialog
+  open={openNuevoProducto}
+  onClose={() => setOpenNuevoProducto(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{ sx: { borderRadius: 3 } }}
+>
+  <DialogTitle sx={{ fontWeight: 700, color: '#1B5E20' }}>
+    Nuevo producto desde compra
+  </DialogTitle>
+
+  <DialogContent>
+    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+    <Grid container spacing={2} mt={0.5}>
+      <Grid item xs={12}>
+        <TextField
+          label="Nombre del producto"
+          fullWidth
+          size="small"
+          value={nuevoProducto.nombre}
+          onChange={e => setNuevoProducto({ ...nuevoProducto, nombre: e.target.value })}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          label="Cantidad inicial"
+          type="number"
+          fullWidth
+          size="small"
+          value={nuevoProducto.cantidad}
+          onChange={e => setNuevoProducto({ ...nuevoProducto, cantidad: e.target.value })}
+          inputProps={{ min: 1 }}
+        />
+      </Grid>
+
+      <Grid item xs={4}>
+        <TextField
+          label="P. Menudista"
+          type="number"
+          fullWidth
+          size="small"
+          value={nuevoProducto.precio_menudista}
+          onChange={e => setNuevoProducto({ ...nuevoProducto, precio_menudista: e.target.value })}
+          inputProps={{ min: 0, step: 0.01 }}
+        />
+      </Grid>
+
+      <Grid item xs={4}>
+        <TextField
+          label="P. Mayorista"
+          type="number"
+          fullWidth
+          size="small"
+          value={nuevoProducto.precio_mayorista}
+          onChange={e => setNuevoProducto({ ...nuevoProducto, precio_mayorista: e.target.value })}
+          inputProps={{ min: 0, step: 0.01 }}
+        />
+      </Grid>
+
+      <Grid item xs={4}>
+        <TextField
+          label="P. Especial"
+          type="number"
+          fullWidth
+          size="small"
+          value={nuevoProducto.precio_especial}
+          onChange={e => setNuevoProducto({ ...nuevoProducto, precio_especial: e.target.value })}
+          inputProps={{ min: 0, step: 0.01 }}
+        />
+      </Grid>
+    </Grid>
+
+    <Alert severity="info" sx={{ mt: 2 }}>
+      Al guardar, el producto se agregará al inventario y se añadirá automáticamente a esta compra.
+    </Alert>
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2.5 }}>
+    <Button onClick={() => setOpenNuevoProducto(false)} sx={{ color: 'text.secondary' }}>
+      Cancelar
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleCrearProductoDesdeCompra}
+      disabled={saving}
+      sx={{
+        bgcolor: '#2E7D32',
+        '&:hover': { bgcolor: '#1B5E20' },
+        borderRadius: 2
+      }}
+    >
+      {saving ? 'Guardando...' : 'Crear y agregar'}
+    </Button>
+  </DialogActions>
+</Dialog>
+
+<Autocomplete options={productos} getOptionLabel={(p) => p.nombre}
             onChange={(_, v) => agregarItemCompra(v)} value={null}
             renderInput={(params) => <TextField {...params} label="Buscar producto del inventario..." size="small" fullWidth />} noOptionsText="Sin resultados" />
 
