@@ -36,23 +36,54 @@ export default function VendedorNuevaVenta() {
   };
 
   const agregarProducto = (producto) => {
-    if (!producto) return;
-    const existe = items.find(i => i.id_producto === producto.id);
-    if (existe) {
-      setItems(items.map(i => i.id_producto === producto.id ? { ...i, cantidad: i.cantidad + 1 } : i));
-    } else {
-      setItems([...items, { id_producto: producto.id, nombre: producto.nombre, cantidad: 1, precio_unitario: getPrecio(producto), stock: producto.cantidad }]);
+  if (!producto) return;
+
+  const existe = items.find(i => i.id_producto === producto.id);
+
+  if (existe) {
+    if (existe.cantidad + 1 > existe.stock) {
+      setError(`No hay suficiente stock de ${producto.nombre}. Disponible: ${existe.stock}`);
+      return;
     }
+
+    setItems(items.map(i =>
+      i.id_producto === producto.id
+        ? { ...i, cantidad: i.cantidad + 1 }
+        : i
+    ));
+  } else {
+    setItems([...items, {
+      id_producto: producto.id,
+      nombre: producto.nombre,
+      cantidad: 1,
+      precio_unitario: getPrecio(producto),
+      stock: producto.cantidad
+    }]);
+  }
+
+  setError('');
   };
 
   const updateCantidad = (id, val) => {
-    const n = parseInt(val);
-    if (n > 0) setItems(items.map(i => i.id_producto === id ? { ...i, cantidad: n } : i));
-  };
+  const n = parseInt(val);
 
-  const updatePrecio = (id, val) => {
-    setItems(items.map(i => i.id_producto === id ? { ...i, precio_unitario: parseFloat(val) || 0 } : i));
-  };
+  setItems(items.map(i => {
+    if (i.id_producto !== id) return i;
+
+    if (!n || n < 1) {
+      setError('La cantidad debe ser mayor a 0');
+      return { ...i, cantidad: 1 };
+    }
+
+    if (n > i.stock) {
+      setError(`No puedes vender más de ${i.stock} unidades de ${i.nombre}`);
+      return { ...i, cantidad: i.stock };
+    }
+
+    setError('');
+    return { ...i, cantidad: n };
+  }));
+};
 
   const removeItem = (id) => setItems(items.filter(i => i.id_producto !== id));
 
@@ -167,12 +198,10 @@ export default function VendedorNuevaVenta() {
                       onChange={e => updateCantidad(item.id_producto, e.target.value)}
                       inputProps={{ min: 1, max: item.stock, style: { width: 56, textAlign: 'center' } }} />
                   </TableCell>
-                  <TableCell>
-                    <TextField type="number" size="small" value={item.precio_unitario}
-                      onChange={e => updatePrecio(item.id_producto, e.target.value)}
-                      inputProps={{ min: 0, step: 0.5, style: { width: 80 } }}
-                      InputProps={{ startAdornment: <Typography variant="caption" mr={0.5}>$</Typography> }} />
+                  <TableCell sx={{ fontWeight: 600, color: '#1B5E20' }}>
+                    {fmt(item.precio_unitario)}
                   </TableCell>
+                
                   <TableCell sx={{ fontWeight: 600, color: '#2E7D32' }}>{fmt(item.precio_unitario * item.cantidad)}</TableCell>
                   <TableCell>
                     <IconButton size="small" color="error" onClick={() => removeItem(item.id_producto)}><DeleteIcon fontSize="small" /></IconButton>

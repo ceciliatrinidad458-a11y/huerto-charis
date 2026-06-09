@@ -8,6 +8,8 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../api.js';
+import Swal from 'sweetalert2';
+import { Snackbar } from '@mui/material';
 
 const empty = { nombre: '', cantidad: '', precio_menudista: '', precio_mayorista: '', precio_especial: '' };
 
@@ -19,6 +21,11 @@ export default function Productos() {
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [snackbar, setSnackbar] = useState({
+  open: false,
+  message: '',
+  severity: 'success'
+});
 
   const load = () => {
     setLoading(true);
@@ -33,27 +40,102 @@ export default function Productos() {
     setOpen(true);
   };
 
-  const handleSave = async () => {
-    if (!form.nombre) return setError('El nombre es requerido');
-    setSaving(true);
-    try {
-      if (editId) await api.put(`/productos/${editId}`, form);
-      else await api.post('/productos', form);
-      setOpen(false);
-      load();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar');
-    } finally {
-      setSaving(false);
-    }
-  };
+const handleSave = async () => {
+  console.log('Entró a handleSave');
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Desactivar este producto?')) return;
+  if (!form.nombre) {
+    console.log('Nombre vacío');
+    return;
+  }
+  if (!form.nombre) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Campo requerido',
+      text: 'El nombre del producto es requerido',
+      confirmButtonColor: '#2E7D32'
+    });
+    return;
+  }
+
+  setSaving(true);
+  setError('');
+
+  try {
+  const esEdicion = Boolean(editId);
+
+  if (esEdicion) {
+    await api.put(`/productos/${editId}`, form);
+  } else {
+    console.log('Antes del POST');
+    await api.post('/productos', form);
+    console.log('Después del POST');
+  
+  }
+setSnackbar({
+  open: true,
+  message: 'Producto agregado correctamente',
+  severity: 'success'
+});
+
+console.log('Voy a mostrar alerta');
+  setOpen(false);
+  load();
+
+  setSnackbar({
+    open: true,
+    message: esEdicion
+      ? 'Producto actualizado correctamente'
+      : 'Nuevo producto agregado al stock',
+    severity: 'success'
+  });
+
+} catch (err) {
+  setSnackbar({
+    open: true,
+    message: err.response?.data?.message || 'Error al guardar producto',
+    severity: 'error'
+  });
+} finally {
+  setSaving(false);
+} 
+};
+
+const handleDelete = async (id) => {
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: '¿Desactivar producto?',
+    text: 'El producto dejará de estar disponible en el inventario.',
+    showCancelButton: true,
+    confirmButtonColor: '#C62828',
+    cancelButtonColor: '#757575',
+    confirmButtonText: 'Sí, desactivar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
     await api.delete(`/productos/${id}`);
-    load();
-  };
 
+    await Swal.fire({
+      icon: 'success',
+      title: 'Producto desactivado',
+      text: 'El producto se desactivó correctamente',
+      confirmButtonColor: '#2E7D32',
+      timer: 1600,
+      showConfirmButton: false
+    });
+
+    load();
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.response?.data?.message || 'No se pudo desactivar el producto',
+      confirmButtonColor: '#C62828'
+    });
+  }
+};
   const fmt = (n) => `$${Number(n || 0).toFixed(2)}`;
 
   return (
@@ -65,6 +147,21 @@ export default function Productos() {
           Nuevo producto
         </Button>
       </Box>
+      <Snackbar
+  open={snackbar.open}
+  autoHideDuration={2500}
+  onClose={() => setSnackbar({ ...snackbar, open: false })}
+  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+>
+  <Alert
+    severity={snackbar.severity}
+    variant="filled"
+    sx={{ borderRadius: 2 }}
+    onClose={() => setSnackbar({ ...snackbar, open: false })}
+  >
+    {snackbar.message}
+  </Alert>
+</Snackbar>
 
       <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
         {loading ? (
@@ -108,7 +205,12 @@ export default function Productos() {
         )}
       </Card>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth
+      <Dialog
+  open={open}
+  onClose={() => setOpen(false)}
+  maxWidth="sm"
+  fullWidth
+  disableRestoreFocus
         PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700, color: '#1B5E20' }}>
           {editId ? 'Editar producto' : 'Nuevo producto'}

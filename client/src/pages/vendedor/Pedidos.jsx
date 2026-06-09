@@ -11,6 +11,11 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import PaymentIcon from '@mui/icons-material/Payment';
 import EditIcon from '@mui/icons-material/Edit';
 import api from '../../api.js';
+import {
+  alertaConfirmar,
+  alertaExito,
+  alertaError
+} from '../../utils/alerts.js';
 
 export default function VendedorPedidos() {
   const [pedidos, setPedidos] = useState([]);
@@ -66,6 +71,20 @@ export default function VendedorPedidos() {
     setSaving(true); setError('');
     try {
       const total = items.reduce((s, i) => s + i.precio_unitario * i.cantidad, 0);
+
+const anticipo = parseFloat(form.anticipo) || 0;
+
+if (anticipo < 0) {
+  setError('El anticipo no puede ser negativo');
+  setSaving(false);
+  return;
+}
+
+
+if (anticipo > total) {
+  setError(`El anticipo no puede ser mayor al total del pedido (${fmt(total)})`);
+  return;
+}
       await api.post('/pedidos', {
         id_cliente: form.id_cliente?.id || null,
         fecha_entrega: form.fecha_entrega,
@@ -147,17 +166,61 @@ export default function VendedorPedidos() {
     } finally { setSaving(false); }
   };
 
-  const handleEntregar = async (id) => {
-    if (!confirm('¿Marcar como entregado? Esto restará del inventario.')) return;
-    await api.put(`/pedidos/${id}/entregar`);
+const handleEntregar = async (pedido) => {
+  const total = Number(pedido.total || 0);
+  const pagado = Number(pedido.anticipo || 0);
+  const saldo = total - pagado;
+
+  if (saldo > 0) {
+    alertaError(
+      `No puedes entregar este pedido porque aún tiene saldo pendiente de ${fmt(saldo)}. Registra el abono completo primero.`
+    );
+    return;
+  }
+
+  const result = await alertaConfirmar(
+    '¿Marcar como entregado? Esto restará del inventario.'
+  );
+
+  if (!result.isConfirmed) return;
+
+  try {
+    await api.put(`/pedidos/${pedido.id}/entregar`);
+
+    alertaExito('Pedido marcado como entregado correctamente');
+
     load();
-  };
+  } catch (err) {
+    alertaError(
+      err.response?.data?.message ||
+      'Error al entregar pedido'
+    );
+  }
+};
 
   const handleCancelar = async (id) => {
-    if (!confirm('¿Cancelar este pedido?')) return;
+  const result = await alertaConfirmar(
+    '¿Cancelar este pedido?'
+  );
+
+  if (!result.isConfirmed) return;
+
+  try {
     await api.put(`/pedidos/${id}/cancelar`);
+
+    alertaExito(
+      'Pedido cancelado correctamente'
+    );
+
     load();
-  };
+
+  } catch (err) {
+    alertaError(
+      err.response?.data?.message ||
+      'Error al cancelar pedido'
+    );
+  }
+};
 
   const handleVerDetalle = async (pedido) => {
     const res = await api.get(`/pedidos/${pedido.id}`);
@@ -261,7 +324,7 @@ export default function VendedorPedidos() {
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Marcar como entregado">
-                            <IconButton size="small" sx={{ color: '#4CAF50' }} onClick={() => handleEntregar(p.id)}>
+                            <IconButton size="small" sx={{ color: '#4CAF50' }} onClick={() => handleEntregar(p)}>
                               <CheckCircleIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
@@ -301,8 +364,24 @@ export default function VendedorPedidos() {
                 InputLabelProps={{ shrink: true }} inputProps={{ min: new Date().toISOString().split('T')[0] }} />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField label="Anticipo ($)" type="number" size="small" fullWidth value={form.anticipo}
-                onChange={e => setForm({ ...form, anticipo: e.target.value })} />
+             <TextField
+  label="Anticipo ($)"
+  type="number"
+  size="small"
+  fullWidth
+  value={form.anticipo}
+  onChange={e => {
+  const valor = e.target.value;
+
+  if (Number(valor) < 0) return;
+
+  setForm({
+    ...form,
+    anticipo: valor
+  });
+}}
+  inputProps={{ min: 0, step: 0.01 }}
+/>
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField label="Notas" size="small" fullWidth value={form.notas}
@@ -336,11 +415,9 @@ export default function VendedorPedidos() {
                         onChange={e => setItems(items.map(i => i.id_producto === item.id_producto ? { ...i, cantidad: parseInt(e.target.value) || 1 } : i))}
                         inputProps={{ min: 1, style: { width: 56 } }} />
                     </TableCell>
-                    <TableCell>
-                      <TextField type="number" size="small" value={item.precio_unitario}
-                        onChange={e => setItems(items.map(i => i.id_producto === item.id_producto ? { ...i, precio_unitario: parseFloat(e.target.value) || 0 } : i))}
-                        inputProps={{ min: 0, style: { width: 80 } }} />
-                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#1B5E20' }}>
+  {fmt(item.precio_unitario)}
+</TableCell>
                     <TableCell sx={{ color: '#2E7D32', fontWeight: 600 }}>{fmt(item.precio_unitario * item.cantidad)}</TableCell>
                     <TableCell>
                       <IconButton size="small" color="error" onClick={() => setItems(items.filter(i => i.id_producto !== item.id_producto))}>

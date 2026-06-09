@@ -209,8 +209,8 @@ export default function VendedorVentas() {
             </TableHead>
             <TableBody>
               {ventasFiltradas.map((v) => (
-                <TableRow key={v.id} hover
-                  onDoubleClick={() => handleDobleClick(v)}
+                <TableRow key={`${v.tipo_movimiento || v.tipo_pago}-${v.id}`} hover                  
+                onDoubleClick={() => handleDobleClick(v)}
                   sx={{ cursor: 'pointer', '&:hover': { bgcolor: '#F1F8E9' }, userSelect: 'none' }}>
                   <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>#{v.id}</TableCell>
                   <TableCell sx={{ fontWeight: 500 }}>{v.cliente_nombre || 'Venta directa'}</TableCell>
@@ -219,7 +219,15 @@ export default function VendedorVentas() {
                     {new Date(v.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </TableCell>
                   <TableCell>
-                    <Chip label={v.tipo_pago} size="small"
+                   <Chip
+  label={
+    v.tipo_movimiento === 'anticipo_pedido'
+      ? 'Anticipo pedido'
+      : v.tipo_movimiento === 'abono_pedido'
+        ? 'Abono pedido'
+        : v.tipo_pago
+  }
+  size="small"
                       sx={{ bgcolor: v.tipo_pago === 'contado' ? '#E8F5E9' : '#E3F2FD', color: v.tipo_pago === 'contado' ? '#2E7D32' : '#1565C0', fontSize: 11, textTransform: 'capitalize' }} />
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>{fmt(v.total)}</TableCell>

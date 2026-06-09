@@ -9,6 +9,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import api from '../../api.js';
+import {
+  alertaConfirmar,
+  alertaExito,
+  alertaError
+} from '../../utils/alerts.js';
 
 const emptyProv = { nombre: '', telefono: '', correo: '', direccion: '' };
 
@@ -51,10 +56,29 @@ export default function Proveedores() {
     finally { setSaving(false); }
   };
 
-  const handleDeleteProv = async (id) => {
-    if (!confirm('¿Eliminar proveedor?')) return;
-    await api.delete(`/proveedores/${id}`); loadProveedores();
-  };
+ const handleDeleteProv = async (id) => {
+  const result = await alertaConfirmar(
+    '¿Eliminar este proveedor?'
+  );
+
+  if (!result.isConfirmed) return;
+
+  try {
+    await api.delete(`/proveedores/${id}`);
+
+    alertaExito(
+      'Proveedor eliminado correctamente'
+    );
+
+    loadProveedores();
+
+  } catch (err) {
+    alertaError(
+      err.response?.data?.message ||
+      'Error al eliminar proveedor'
+    );
+  }
+};
 
   const agregarItemCompra = (producto) => {
     if (!producto) return;

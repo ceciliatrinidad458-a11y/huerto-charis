@@ -8,6 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../api.js';
+import { alertaConfirmar, alertaExito, alertaError } from '../utils/alerts.js';
 
 const empty = { nombre: '', telefono: '', tipo: 'menudista', credito_activo: false, saldo_credito: 0 };
 
@@ -51,15 +52,22 @@ export default function Clientes() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('¿Eliminar este cliente?')) return;
-    await api.delete(`/clientes/${id}`);
-    load();
-  };
+  const result = await alertaConfirmar('¿Eliminar este cliente?');
 
+  if (!result.isConfirmed) return;
+
+  try {
+    await api.delete(`/clientes/${id}`);
+    alertaExito('Cliente eliminado correctamente');
+    load();
+  } catch (err) {
+    alertaError(err.response?.data?.message || 'Error al eliminar cliente');
+  }
+};    
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700} color="#1B5E20">Clientes</Typography>
+        <Typography variant="h5" fontWeight={700} color="#1B5E20">Clientes ceciii</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}
           sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, borderRadius: 2 }}>
           Nuevo cliente

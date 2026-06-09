@@ -32,13 +32,11 @@ const getAll = async (req, res) => {
       ORDER BY p.fecha_entrega ASC
     `, [fechaInicio]);
 
-    const pedidos = result.rows.map(row => ({
+    res.json(result.rows.map(row => ({
       ...row,
       fecha_entrega: formatearFecha(row.fecha_entrega),
       fecha_pedido: formatearFecha(row.fecha_pedido),
-    }));
-
-    res.json(pedidos);
+    })));
   } catch (err) {
     res.status(500).json({ message: 'Error', error: err.message });
   }
@@ -100,19 +98,24 @@ const create = async (req, res) => {
       0
     );
 
+    const anticipoInicial = Number(anticipo || 0);
+
+    if (anticipoInicial < 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'El anticipo no puede ser negativo' });
+    }
+
+    if (anticipoInicial > total) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'El anticipo no puede ser mayor al total del pedido' });
+    }
+
     const pedidoResult = await client.query(
       `INSERT INTO pedidos
        (id_cliente, id_usuario, fecha_entrega, total, anticipo, notas)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
-      [
-        id_cliente || null,
-        id_usuario,
-        fecha_entrega,
-        total,
-        anticipo || 0,
-        notas || null
-      ]
+      [id_cliente || null, id_usuario, fecha_entrega, total, anticipoInicial, notas || null]
     );
 
     const id_pedido = pedidoResult.rows[0].id;
@@ -132,6 +135,14 @@ const create = async (req, res) => {
       );
     }
 
+    if (anticipoInicial > 0) {
+      await client.query(
+        `INSERT INTO abonos_pedidos (id_pedido, monto, notas, id_usuario)
+         VALUES ($1, $2, $3, $4)`,
+        [id_pedido, anticipoInicial, 'Anticipo inicial', id_usuario]
+      );
+    }
+
     await client.query('COMMIT');
 
     res.status(201).json({
@@ -141,11 +152,7 @@ const create = async (req, res) => {
     });
   } catch (err) {
     await client.query('ROLLBACK');
-
-    res.status(500).json({
-      message: 'Error al registrar pedido',
-      error: err.message
-    });
+    res.status(500).json({ message: 'Error al registrar pedido', error: err.message });
   } finally {
     client.release();
   }
@@ -174,10 +181,31 @@ const entregar = async (req, res) => {
       return res.status(400).json({ message: 'El pedido ya fue entregado' });
     }
 
+    if (pedido.estado === 'cancelado') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'No puedes entregar un pedido cancelado' });
+    }
+
+    const total = Number(pedido.total || 0);
+    const pagado = Number(pedido.anticipo || 0);
+    const saldo = total - pagado;
+
+    if (saldo > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        message: `No puedes entregar este pedido porque tiene saldo pendiente de $${saldo.toFixed(2)}`
+      });
+    }
+
     const itemsResult = await client.query(
       'SELECT * FROM detalle_pedidos WHERE id_pedido = $1',
       [req.params.id]
     );
+
+    if (itemsResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'El pedido no tiene productos' });
+    }
 
     for (const item of itemsResult.rows) {
       if (item.id_producto) {
@@ -185,7 +213,7 @@ const entregar = async (req, res) => {
           `UPDATE productos
            SET cantidad = cantidad - $1
            WHERE id = $2`,
-          [item.cantidad, item.id_producto]
+          [Number(item.cantidad), item.id_producto]
         );
       }
     }
@@ -197,16 +225,10 @@ const entregar = async (req, res) => {
 
     await client.query('COMMIT');
 
-    res.json({
-      message: 'Pedido marcado como entregado e inventario actualizado'
-    });
+    res.json({ message: 'Pedido entregado e inventario descontado correctamente' });
   } catch (err) {
     await client.query('ROLLBACK');
-
-    res.status(500).json({
-      message: 'Error',
-      error: err.message
-    });
+    res.status(500).json({ message: 'Error al entregar pedido', error: err.message });
   } finally {
     client.release();
   }
@@ -224,6 +246,7 @@ const cancelar = async (req, res) => {
     res.status(500).json({ message: 'Error', error: err.message });
   }
 };
+
 const registrarAbono = async (req, res) => {
   const { monto, notas } = req.body;
   const id_pedido = req.params.id;
@@ -247,17 +270,29 @@ const registrarAbono = async (req, res) => {
       return res.status(404).json({ message: 'Pedido no encontrado' });
     }
 
+    const pedido = pedidoResult.rows[0];
+    const total = Number(pedido.total || 0);
+    const pagadoActual = Number(pedido.anticipo || 0);
+    const nuevoAbono = Number(monto);
+
+    if (pagadoActual + nuevoAbono > total) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        message: `El abono excede el total del pedido. Saldo disponible: $${(total - pagadoActual).toFixed(2)}`
+      });
+    }
+
     await client.query(
-      `INSERT INTO abonos_pedidos (id_pedido, monto, notas)
-       VALUES ($1, $2, $3)`,
-      [id_pedido, Number(monto), notas || null]
+      `INSERT INTO abonos_pedidos (id_pedido, monto, notas, id_usuario)
+       VALUES ($1, $2, $3, $4)`,
+      [id_pedido, nuevoAbono, notas || null, req.usuario.id]
     );
 
     await client.query(
       `UPDATE pedidos
        SET anticipo = COALESCE(anticipo, 0) + $1
        WHERE id = $2`,
-      [Number(monto), id_pedido]
+      [nuevoAbono, id_pedido]
     );
 
     await client.query('COMMIT');
@@ -292,6 +327,7 @@ const actualizarAnticipo = async (req, res) => {
     res.status(500).json({ message: 'Error al modificar el anticipo', error: err.message });
   }
 };
+
 module.exports = {
   getAll,
   getOne,

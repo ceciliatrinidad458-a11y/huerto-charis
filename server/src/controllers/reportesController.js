@@ -32,15 +32,32 @@ const getResumen = async (req, res) => {
   }
 
   try {
-    const totalesResult = await db.query(`
-      SELECT 
-        COUNT(*) AS total_ventas,
-        COALESCE(SUM(total), 0) AS ingresos_total,
-        COALESCE(SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END), 0) AS contado,
-        COALESCE(SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END), 0) AS credito
-      FROM ventas 
-      WHERE fecha >= $1
-    `, [fechaInicio]);
+   const totalesResult = await db.query(`
+  SELECT
+    COALESCE(SUM(total_ventas), 0) AS total_ventas,
+    COALESCE(SUM(ingresos_total), 0) AS ingresos_total,
+    COALESCE(SUM(contado), 0) AS contado,
+    COALESCE(SUM(credito), 0) AS credito
+  FROM (
+    SELECT 
+      COUNT(*) AS total_ventas,
+      COALESCE(SUM(total), 0) AS ingresos_total,
+      COALESCE(SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END), 0) AS contado,
+      COALESCE(SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END), 0) AS credito
+    FROM ventas 
+    WHERE fecha >= $1
+
+    UNION ALL
+
+    SELECT
+      COUNT(*) AS total_ventas,
+      COALESCE(SUM(monto), 0) AS ingresos_total,
+      COALESCE(SUM(monto), 0) AS contado,
+      0 AS credito
+    FROM abonos_pedidos
+    WHERE fecha >= $1
+  ) movimientos
+`, [fechaInicio]);
 
     const porDiaResult = await db.query(`
       SELECT 
@@ -101,11 +118,24 @@ const getDashboard = async (req, res) => {
     hoy.setHours(0, 0, 0, 0);
 
     const ventasHoyResult = await db.query(
-      `SELECT COUNT(*) AS count, COALESCE(SUM(total), 0) AS total
-       FROM ventas
-       WHERE fecha >= $1`,
-      [hoy]
-    );
+  `
+  SELECT 
+    COALESCE(SUM(count), 0) AS count,
+    COALESCE(SUM(total), 0) AS total
+  FROM (
+    SELECT COUNT(*) AS count, COALESCE(SUM(total), 0) AS total
+    FROM ventas
+    WHERE fecha >= $1
+
+    UNION ALL
+
+    SELECT COUNT(*) AS count, COALESCE(SUM(monto), 0) AS total
+    FROM abonos_pedidos
+    WHERE fecha >= $1
+  ) movimientos
+  `,
+  [hoy]
+);
 
     const creditosActivosResult = await db.query(
       `SELECT COUNT(*) AS count, COALESCE(SUM(saldo_credito), 0) AS total
