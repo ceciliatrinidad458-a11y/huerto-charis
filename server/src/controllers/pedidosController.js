@@ -29,7 +29,7 @@ const getAll = async (req, res) => {
       LEFT JOIN clientes c ON p.id_cliente = c.id
       LEFT JOIN usuarios u ON p.id_usuario = u.id
       WHERE p.fecha_pedido >= $1
-      ORDER BY p.fecha_entrega ASC
+      ORDER BY p.id DESC
     `, [fechaInicio]);
 
     res.json(result.rows.map(row => ({

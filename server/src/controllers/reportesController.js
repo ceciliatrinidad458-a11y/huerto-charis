@@ -54,8 +54,11 @@ const getResumen = async (req, res) => {
       COALESCE(SUM(monto), 0) AS ingresos_total,
       COALESCE(SUM(monto), 0) AS contado,
       0 AS credito
-    FROM abonos_pedidos
-    WHERE fecha >= $1
+      FROM abonos_pedidos a
+JOIN pedidos p ON a.id_pedido = p.id
+WHERE a.fecha >= $1
+AND p.estado <> 'cancelado'
+    
   ) movimientos
 `, [fechaInicio]);
 
@@ -129,14 +132,15 @@ const getDashboard = async (req, res) => {
 
     UNION ALL
 
-    SELECT COUNT(*) AS count, COALESCE(SUM(monto), 0) AS total
-    FROM abonos_pedidos
-    WHERE fecha >= $1
+    SELECT COUNT(*) AS count, COALESCE(SUM(a.monto), 0) AS total
+    FROM abonos_pedidos a
+    JOIN pedidos p ON a.id_pedido = p.id
+    WHERE a.fecha >= $1
+    AND p.estado <> 'cancelado'
   ) movimientos
   `,
   [hoy]
 );
-
     const creditosActivosResult = await db.query(
       `SELECT COUNT(*) AS count, COALESCE(SUM(saldo_credito), 0) AS total
        FROM clientes

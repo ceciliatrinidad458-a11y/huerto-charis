@@ -5,9 +5,12 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import YardIcon from '@mui/icons-material/Yard';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
 
 const W = 220;
 const navItems = [
+  { label: 'Dashboard', path: '/vendedor/dashboard', icon: <DashboardIcon /> },
   { label: 'Ventas', path: '/vendedor/ventas', icon: <PointOfSaleIcon /> },
   { label: 'Inventario', path: '/vendedor/inventario', icon: <InventoryIcon /> },
   { label: 'Pedidos', path: '/vendedor/pedidos', icon: <AssignmentIcon /> },

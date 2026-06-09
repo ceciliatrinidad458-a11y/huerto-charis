@@ -12,8 +12,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api.js';
 import Ticket from '../../components/Ticket.jsx';
+import TicketPedido from '../../components/TicketPedido.jsx';
 
 export default function VendedorVentas() {
+  const [ticketPedido, setTicketPedido] = useState(null);
   const [ventas, setVentas] = useState([]);
   const [ventasFiltradas, setVentasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,18 +45,37 @@ export default function VendedorVentas() {
 
     // Filtro por búsqueda (ID, Cliente, Vendedor)
     if (filtros.search) {
-      const busqueda = filtros.search.toLowerCase();
-      filtradas = filtradas.filter(v => 
-        v.id.toString().includes(busqueda) ||
-        (v.cliente_nombre && v.cliente_nombre.toLowerCase().includes(busqueda)) ||
-        v.vendedor_nombre.toLowerCase().includes(busqueda)
-      );
+  const busqueda = String(filtros.search || '').toLowerCase();
+
+  filtradas = filtradas.filter(v => {
+    const id = String(v?.id || '');
+    const idPedido = String(v?.id_pedido || '');
+    const cliente = String(v?.cliente_nombre || '').toLowerCase();
+    const vendedor = String(v?.vendedor_nombre || '').toLowerCase();
+    const movimiento = String(v?.tipo_movimiento || '').toLowerCase();
+    const pago = String(v?.tipo_pago || '').toLowerCase();
+
+    return (
+      id.includes(busqueda) ||
+      idPedido.includes(busqueda) ||
+      cliente.includes(busqueda) ||
+      vendedor.includes(busqueda) ||
+      movimiento.includes(busqueda) ||
+      pago.includes(busqueda)
+    );
+  });
+}
+    
+    // Filtro por tipo de pago
+   if (filtros.tipoPago !== 'todos') {
+  filtradas = filtradas.filter(v => {
+    if (filtros.tipoPago === 'pedido') {
+      return v.tipo_movimiento === 'anticipo_pedido' || v.tipo_movimiento === 'abono_pedido';
     }
 
-    // Filtro por tipo de pago
-    if (filtros.tipoPago !== 'todos') {
-      filtradas = filtradas.filter(v => v.tipo_pago === filtros.tipoPago);
-    }
+    return v.tipo_pago === filtros.tipoPago && v.tipo_movimiento === 'venta';
+  });
+}
 
     // Filtro por fecha desde
     if (filtros.fechaDesde) {
@@ -89,16 +110,32 @@ export default function VendedorVentas() {
     aplicarFiltros();
   }, [filtros, ventas]);
 
-  const handleDobleClick = async (venta) => {
-    setLoadingDetalle(true);
-    setVentaDetalle({ ...venta, detalle: [] });
+ const handleDobleClick = async (venta) => {
+  if (
+    venta.tipo_movimiento === 'anticipo_pedido' ||
+    venta.tipo_movimiento === 'abono_pedido'
+  ) {
     try {
-      const res = await api.get(`/ventas/${venta.id}`);
-      setVentaDetalle(res.data);
+      const res = await api.get(`/pedidos/${venta.id_pedido}`);
+      setTicketPedido(res.data);
     } catch (err) {
       console.error(err);
-    } finally { setLoadingDetalle(false); }
-  };
+    }
+    return;
+  }
+
+  setLoadingDetalle(true);
+  setVentaDetalle({ ...venta, detalle: [] });
+
+  try {
+    const res = await api.get(`/ventas/${venta.id}`);
+    setVentaDetalle(res.data);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoadingDetalle(false);
+  }
+};
 
   const fmt = (n) => `$${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
 
@@ -147,6 +184,7 @@ export default function VendedorVentas() {
                 <MenuItem value="todos">Todos</MenuItem>
                 <MenuItem value="contado">Contado</MenuItem>
                 <MenuItem value="credito">Crédito</MenuItem>
+                <MenuItem value="pedido">Pedidos</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -217,7 +255,7 @@ export default function VendedorVentas() {
             </TableHead>
             <TableBody>
               {ventasFiltradas.map((v) => (
-                <TableRow key={v.id} hover
+                <TableRow key={`${v.tipo_movimiento || v.tipo_pago}-${v.id}`} hover
                   onDoubleClick={() => handleDobleClick(v)}
                   sx={{ cursor: 'pointer', '&:hover': { bgcolor: '#F1F8E9' }, userSelect: 'none' }}>
                   <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>#{v.id}</TableCell>
@@ -299,11 +337,20 @@ export default function VendedorVentas() {
 
       {/* DIALOG TICKET REIMPRESIÓN */}
       <Dialog open={!!ticketVenta} onClose={() => setTicketVenta(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ textAlign: 'center', color: '#1B5E20', fontWeight: 700 }}>Reimprimir Ticket</DialogTitle>
-        <DialogContent>
-          <Ticket venta={ticketVenta} onClose={() => setTicketVenta(null)} />
-        </DialogContent>
-      </Dialog>
+  <DialogTitle sx={{ textAlign: 'center', color: '#1B5E20', fontWeight: 700 }}>Reimprimir Ticket</DialogTitle>
+  <DialogContent>
+    <Ticket venta={ticketVenta} onClose={() => setTicketVenta(null)} />
+  </DialogContent>
+</Dialog>
+
+<Dialog open={!!ticketPedido} onClose={() => setTicketPedido(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+  <DialogTitle sx={{ textAlign: 'center', color: '#1B5E20', fontWeight: 700 }}>
+    Reimprimir Ticket de Pedido
+  </DialogTitle>
+  <DialogContent>
+    <TicketPedido pedido={ticketPedido} onClose={() => setTicketPedido(null)} />
+  </DialogContent>
+</Dialog>
     </Box>
   );
 }

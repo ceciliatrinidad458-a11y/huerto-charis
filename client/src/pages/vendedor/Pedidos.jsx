@@ -10,7 +10,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PaymentIcon from '@mui/icons-material/Payment';
 import EditIcon from '@mui/icons-material/Edit';
+import TicketPedido from '../../components/TicketPedido.jsx';
 import api from '../../api.js';
+import PrintIcon from '@mui/icons-material/Print';
 import {
   alertaConfirmar,
   alertaExito,
@@ -21,6 +23,7 @@ export default function VendedorPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState('dia');
+  const [busqueda, setBusqueda] = useState('');
   const [clientes, setClientes] = useState([]);
   const [productos, setProductos] = useState([]);
   const [open, setOpen] = useState(false);
@@ -28,6 +31,8 @@ export default function VendedorPedidos() {
   const [abonoOpen, setAbonoOpen] = useState(false);
   const [editAnticipoOpen, setEditAnticipoOpen] = useState(false);
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
+  const [ticketPedidoOpen, setTicketPedidoOpen] = useState(false);
+  const [ticketPedido, setTicketPedido] = useState(null);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -227,6 +232,20 @@ const handleEntregar = async (pedido) => {
     setPedidoDetalle(res.data);
     setDetalleOpen(true);
   };
+  const handleTicketPedido = async (pedido) => {
+  try {
+    const res = await api.get(`/pedidos/${pedido.id}`);
+
+    setTicketPedido(res.data);
+    setTicketPedidoOpen(true);
+
+  } catch (err) {
+    alertaError(
+      err.response?.data?.message ||
+      'Error al obtener el pedido'
+    );
+  }
+};
 
   const abrirDialogoAbono = (pedido) => {
     setPedidoSeleccionado(pedido);
@@ -247,7 +266,17 @@ const handleEntregar = async (pedido) => {
   const anticipo = parseFloat(form.anticipo) || 0;
 
   const estadoColor = { pendiente: { bg: '#FFF3E0', text: '#E65100' }, entregado: { bg: '#E8F5E9', text: '#2E7D32' }, cancelado: { bg: '#FFEBEE', text: '#C62828' } };
+const pedidosFiltrados = pedidos.filter(p => {
+  const texto = busqueda.toLowerCase();
 
+  return (
+    String(p.id || '').includes(texto) ||
+    String(p.cliente_nombre || '').toLowerCase().includes(texto) ||
+    String(p.vendedor_nombre || '').toLowerCase().includes(texto) ||
+    String(p.estado || '').toLowerCase().includes(texto) ||
+    String(p.fecha_entrega || '').toLowerCase().includes(texto)
+  );
+});
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -268,6 +297,16 @@ const handleEntregar = async (pedido) => {
           </Button>
         </Box>
       </Box>
+      <TextField
+  fullWidth
+  size="small"
+  label="Buscar pedido"
+  placeholder="Buscar por folio, cliente, vendedor, estado o fecha..."
+  value={busqueda}
+  onChange={(e) => setBusqueda(e.target.value)}
+  sx={{ mb: 2 }}
+/>
+      
 
       <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
         {loading ? (
@@ -282,7 +321,7 @@ const handleEntregar = async (pedido) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {pedidos.map((p) => {
+              {pedidosFiltrados.map((p) => {
                 const ec = estadoColor[p.estado] || estadoColor.pendiente;
                 const saldo = Number(p.total || 0) - Number(p.anticipo || 0);
                 const pagado = Number(p.anticipo || 0);
@@ -313,6 +352,14 @@ const handleEntregar = async (pedido) => {
                     <TableCell>
                       {p.estado === 'pendiente' && (
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
+                          <Tooltip title="Imprimir ticket">
+                            <IconButton
+                            size="small"
+                            sx={{ color: '#1976D2' }}
+                            onClick={() => handleTicketPedido(p)}>
+                              <PrintIcon fontSize="small" />
+                               </IconButton>
+                               </Tooltip>
                           <Tooltip title="Registrar abono">
                             <IconButton size="small" sx={{ color: '#2E7D32' }} onClick={() => abrirDialogoAbono(p)}>
                               <PaymentIcon fontSize="small" />
@@ -339,7 +386,7 @@ const handleEntregar = async (pedido) => {
                   </TableRow>
                 );
               })}
-              {pedidos.length === 0 && (
+              {pedidosFiltrados.length === 0 && (
                 <TableRow><TableCell colSpan={8} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No hay pedidos en este período</TableCell></TableRow>
               )}
             </TableBody>
@@ -597,7 +644,9 @@ const handleEntregar = async (pedido) => {
                     ))}
                   </>
                 )}
+                
               </Box>
+              
             </Box>
           )}
         </DialogContent>
@@ -617,7 +666,24 @@ const handleEntregar = async (pedido) => {
             </Button>
           )}
         </DialogActions>
-      </Dialog>
+        </Dialog>
+
+<Dialog
+  open={ticketPedidoOpen}
+  onClose={() => setTicketPedidoOpen(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{ sx: { borderRadius: 3 } }}
+>
+  <DialogContent>
+    <TicketPedido
+      pedido={ticketPedido}
+      onClose={() => setTicketPedidoOpen(false)}
+    />
+  </DialogContent>
+</Dialog>
+  
+      
     </Box>
   );
 }

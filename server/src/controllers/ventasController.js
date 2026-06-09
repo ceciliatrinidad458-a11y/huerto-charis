@@ -3,39 +3,41 @@ const db = require('../db');
 const getAll = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT 
-        v.id,
-        'venta' AS tipo_movimiento,
-        v.total,
-        v.tipo_pago,
-        v.fecha,
-        c.nombre AS cliente_nombre,
-        u.nombre AS vendedor_nombre
-      FROM ventas v
-      LEFT JOIN clientes c ON v.id_cliente = c.id
-      LEFT JOIN usuarios u ON v.id_usuario = u.id
+  SELECT 
+    v.id,
+    NULL AS id_pedido,
+    'venta' AS tipo_movimiento,
+    v.total,
+    v.tipo_pago,
+    v.fecha,
+    c.nombre AS cliente_nombre,
+    u.nombre AS vendedor_nombre
+  FROM ventas v
+  LEFT JOIN clientes c ON v.id_cliente = c.id
+  LEFT JOIN usuarios u ON v.id_usuario = u.id
 
-      UNION ALL
+  UNION ALL
 
-      SELECT
-        a.id,
-        CASE 
-          WHEN a.notas = 'Anticipo inicial' THEN 'anticipo_pedido'
-          ELSE 'abono_pedido'
-        END AS tipo_movimiento,
-        a.monto AS total,
-        'contado' AS tipo_pago,
-        a.fecha,
-        c.nombre AS cliente_nombre,
-        u.nombre AS vendedor_nombre
-      FROM abonos_pedidos a
-      JOIN pedidos p ON a.id_pedido = p.id
-      LEFT JOIN clientes c ON p.id_cliente = c.id
-      LEFT JOIN usuarios u ON a.id_usuario = u.id
-
-      ORDER BY fecha DESC
-      LIMIT 100
-    `);
+  SELECT
+    a.id,
+    p.id AS id_pedido,
+    CASE 
+      WHEN a.notas = 'Anticipo inicial' THEN 'anticipo_pedido'
+      ELSE 'abono_pedido'
+    END AS tipo_movimiento,
+    a.monto AS total,
+    'contado' AS tipo_pago,
+    a.fecha,
+    c.nombre AS cliente_nombre,
+    u.nombre AS vendedor_nombre
+  FROM abonos_pedidos a
+JOIN pedidos p ON a.id_pedido = p.id
+LEFT JOIN clientes c ON p.id_cliente = c.id
+LEFT JOIN usuarios u ON a.id_usuario = u.id
+WHERE p.estado <> 'cancelado'
+  ORDER BY fecha DESC
+  LIMIT 100
+`);
 
     res.json(result.rows);
   } catch (err) {
