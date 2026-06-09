@@ -1,20 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box, Card, CardContent, TextField, Button, Typography, Alert,
   MenuItem, Tabs, Tab, Divider
 } from '@mui/material';
-import YardIcon from '@mui/icons-material/Yard';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import { useNavigate } from 'react-router-dom';
 import api from '../api.js';
 
 export default function Login() {
   const [tab, setTab] = useState(0);
   const [loginForm, setLoginForm] = useState({ correo: '', password: '' });
+  const [adminExiste, setAdminExiste] = useState(false);
   const [regForm, setRegForm] = useState({ nombre: '', correo: '', password: '', confirmar: '', rol: 'vendedor' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+ 
+  useEffect(() => {
+  api.get('/auth/existe-admin')
+    .then(res => setAdminExiste(res.data.existe))
+    .catch(() => setAdminExiste(false));
+}, []);
 
   const handleTab = (_, val) => { setTab(val); setError(''); setSuccess(''); };
 
@@ -63,9 +70,18 @@ export default function Login() {
         <CardContent sx={{ p: 4 }}>
 
           <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Box sx={{ display: 'inline-flex', bgcolor: '#E8F5E9', borderRadius: '50%', p: 1.5, mb: 1.5 }}>
-              <YardIcon sx={{ fontSize: 36, color: '#2E7D32' }} />
-            </Box>
+             <Box
+  component="img"
+  src="/logo-corte-caja.png"
+  alt="Viveros Charis"
+  sx={{
+    width: 42,
+    height: 42,
+    borderRadius: 2,
+    bgcolor: '#fff',
+    p: 0.5
+  }}
+/>
             <Typography variant="h5" fontWeight={700} color="#1B5E20">Viveros Charis</Typography>
             <Typography variant="body2" color="text.secondary" mt={0.5}>Sistema de Gestión de Ventas</Typography>
           </Box>
@@ -112,7 +128,9 @@ export default function Login() {
               <TextField select label="Rol" size="small" fullWidth
                 value={regForm.rol} onChange={e => setRegForm({ ...regForm, rol: e.target.value })} sx={inputSx}>
                 <MenuItem value="vendedor">Vendedor</MenuItem>
-                <MenuItem value="admin">Administrador</MenuItem>
+                {!adminExiste && (
+  <MenuItem value="admin">Administrador</MenuItem>
+)}
               </TextField>
               <TextField label="Contraseña" type="password" size="small" fullWidth required
                 value={regForm.password} onChange={e => setRegForm({ ...regForm, password: e.target.value })} sx={inputSx}

@@ -7,7 +7,7 @@ import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LogoutIcon from '@mui/icons-material/Logout';
-import YardIcon from '@mui/icons-material/Yard';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 
 const W = 220;
@@ -30,8 +30,19 @@ export default function AdminLayout() {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f4f6f0' }}>
       <Drawer variant="permanent" sx={{ width: W, flexShrink: 0, '& .MuiDrawer-paper': { width: W, bgcolor: '#1B5E20', color: '#fff', border: 'none' } }}>
         <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ bgcolor: '#4CAF50', borderRadius: 2, p: 0.8, display: 'flex' }}><YardIcon sx={{ fontSize: 22, color: '#fff' }} /></Box>
-          <Box>
+<Box
+  component="img"
+  src="/logo-corte-caja.png"
+  alt="Viveros Charis"
+  sx={{
+    width: 42,
+    height: 42,
+    borderRadius: 2,
+    bgcolor: '#fff',
+    p: 0.5
+  }}
+/>
+         <Box>
             <Typography variant="body1" fontWeight={700} color="#fff" lineHeight={1.2}>Viveros Charis</Typography>
             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>Administrador</Typography>
           </Box>

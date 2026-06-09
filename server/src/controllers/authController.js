@@ -49,7 +49,17 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
   const { nombre, correo, password, rol } = req.body;
+  if (rol === 'admin') {
+  const adminResult = await db.query(
+    `SELECT COUNT(*) AS total FROM usuarios WHERE rol = 'admin'`
+  );
 
+  if (Number(adminResult.rows[0].total) > 0) {
+    return res.status(400).json({
+      message: 'Ya existe un administrador registrado'
+    });
+  }
+}
   try {
     const hash = await bcrypt.hash(password, 10);
 
@@ -76,5 +86,21 @@ const register = async (req, res) => {
     });
   }
 };
+const existeAdmin = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT COUNT(*) AS total FROM usuarios WHERE rol = 'admin'`
+    );
 
-module.exports = { login, register };
+    res.json({
+      existe: Number(result.rows[0].total) > 0
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: 'Error al verificar administrador',
+      error: err.message
+    });
+  }
+};
+
+module.exports = { login, register, existeAdmin };
