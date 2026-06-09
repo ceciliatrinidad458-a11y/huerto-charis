@@ -12,8 +12,8 @@ const W = 220;
 const navItems = [
   { label: 'Dashboard', path: '/vendedor/dashboard', icon: <DashboardIcon /> },
   { label: 'Ventas', path: '/vendedor/ventas', icon: <PointOfSaleIcon /> },
-  { label: 'Inventario', path: '/vendedor/inventario', icon: <InventoryIcon /> },
   { label: 'Pedidos', path: '/vendedor/pedidos', icon: <AssignmentIcon /> },
+  { label: 'Inventario', path: '/vendedor/inventario', icon: <InventoryIcon /> },
 ];
 
 export default function VendedorLayout() {

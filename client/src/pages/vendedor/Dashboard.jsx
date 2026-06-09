@@ -35,7 +35,16 @@ export default function VendedorDashboard() {
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+          <Card
+  onClick={() => navigate('/vendedor/ventas')}
+  sx={{
+    borderRadius: 3,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    cursor: 'pointer',
+    transition: '0.2s',
+    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }
+  }}
+>
             <CardContent sx={{ p: 2.5 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
@@ -49,7 +58,16 @@ export default function VendedorDashboard() {
           </Card>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+          <Card
+  onClick={() => navigate('/vendedor/inventario')}
+  sx={{
+    borderRadius: 3,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    cursor: 'pointer',
+    transition: '0.2s',
+    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }
+  }}
+>
             <CardContent sx={{ p: 2.5 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
@@ -66,7 +84,14 @@ export default function VendedorDashboard() {
 
       <Grid container spacing={2}>
         <Grid item xs={12} md={7}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+          <Card
+  onClick={() => navigate('/vendedor/ventas')}
+  sx={{
+    borderRadius: 3,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    cursor: 'pointer'
+  }}
+>
             <CardContent sx={{ p: 2.5 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="subtitle1" fontWeight={700} color="#1B5E20">Ventas recientes</Typography>
@@ -94,7 +119,14 @@ export default function VendedorDashboard() {
           </Card>
         </Grid>
         <Grid item xs={12} md={5}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+          <Card
+  onClick={() => navigate('/vendedor/inventario')}
+  sx={{
+    borderRadius: 3,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    cursor: 'pointer'
+  }}
+>
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="subtitle1" fontWeight={700} color="#1B5E20" mb={2}>Stock crítico</Typography>
               {data?.productosStockBajo?.map((p, i) => (

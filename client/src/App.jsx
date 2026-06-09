@@ -11,6 +11,7 @@
   import NuevaVenta from './pages/admin/NuevaVenta.jsx';
   import Reportes from './pages/Reportes.jsx';
   import Proveedores from './pages/admin/Proveedores.jsx';
+  import AdminPedidos from './pages/vendedor/Pedidos.jsx';
 
   // Vendedor pages
   import VendedorDashboard from './pages/vendedor/Dashboard.jsx';
@@ -49,6 +50,7 @@
 
           {/* Admin routes */}
           <Route path="/admin" element={<PrivateRoute allowedRol="admin"><AdminLayout /></PrivateRoute>}>
+            <Route path="pedidos" element={<AdminPedidos />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="productos" element={<Productos />} />
             <Route path="clientes" element={<Clientes />} />

@@ -8,17 +8,18 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LogoutIcon from '@mui/icons-material/Logout';
 import YardIcon from '@mui/icons-material/Yard';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 const W = 220;
 const navItems = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: <DashboardIcon /> },
   { label: 'Ventas', path: '/admin/ventas', icon: <PointOfSaleIcon /> },
-  { label: 'Inventario', path: '/admin/productos', icon: <InventoryIcon /> },
+  { label: 'Pedidos', path: '/admin/pedidos', icon: <AssignmentIcon /> },
   { label: 'Clientes', path: '/admin/clientes', icon: <PeopleIcon /> },
   { label: 'Proveedores', path: '/admin/proveedores', icon: <LocalShippingIcon /> },
   { label: 'Reportes', path: '/admin/reportes', icon: <BarChartIcon /> },
+  { label: 'Inventario', path: '/admin/productos', icon: <InventoryIcon /> },
 ];
-
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
