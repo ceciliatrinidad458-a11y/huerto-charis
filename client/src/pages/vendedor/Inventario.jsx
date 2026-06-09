@@ -23,6 +23,54 @@ export default function VendedorInventario() {
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
           sx={{ width: 240 }} />
       </Box>
+      <Card
+  sx={{
+    mb: 2.5,
+    borderRadius: 3,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    border: '1px solid #E8F5E9',
+    background: 'linear-gradient(135deg, #FFFFFF 0%, #F9FBF7 100%)'
+  }}
+>
+  <Box sx={{ p: 2.4 }}>
+    <Typography variant="subtitle1" fontWeight={800} color="#1B5E20" mb={0.5}>
+      Guía de estado del inventario
+    </Typography>
+
+    <Typography variant="body2" color="text.secondary" mb={2}>
+      El sistema clasifica automáticamente cada producto según su cantidad disponible.
+    </Typography>
+
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
+      <Box sx={{ p: 1.8, borderRadius: 2.5, bgcolor: '#E8F5E9', border: '1px solid #C8E6C9' }}>
+        <Typography fontWeight={800} color="#2E7D32" fontSize={14}>
+          Disponible
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          Más de 10 unidades en existencia.
+        </Typography>
+      </Box>
+
+      <Box sx={{ p: 1.8, borderRadius: 2.5, bgcolor: '#FFF8E1', border: '1px solid #FFE082' }}>
+        <Typography fontWeight={800} color="#F57F17" fontSize={14}>
+          Stock bajo
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          Entre 6 y 10 unidades disponibles.
+        </Typography>
+      </Box>
+
+      <Box sx={{ p: 1.8, borderRadius: 2.5, bgcolor: '#FFEBEE', border: '1px solid #FFCDD2' }}>
+        <Typography fontWeight={800} color="#C62828" fontSize={14}>
+          Stock crítico
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          5 unidades o menos; requiere atención inmediata.
+        </Typography>
+      </Box>
+    </Box>
+  </Box>
+</Card>
 
       <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
         {loading ? (
