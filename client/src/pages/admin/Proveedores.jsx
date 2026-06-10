@@ -201,20 +201,64 @@ const handleVerDetalleCompra = async (compra) => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700} color="#1B5E20">Proveedores</Typography>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Button variant="outlined" startIcon={<ShoppingBagIcon />} onClick={() => { setError(''); setOpenCompra(true); }}
-            sx={{ borderColor: '#2E7D32', color: '#2E7D32', borderRadius: 2 }}>
-            Registrar compra
-          </Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenProv()}
-            sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, borderRadius: 2 }}>
-            Nuevo proveedor
-          </Button>
-        </Box>
-      </Box>
+      <Box
+  sx={{
+    display: 'flex',
+    flexDirection: { xs: 'column', md: 'row' },
+    justifyContent: 'space-between',
+    alignItems: { xs: 'stretch', md: 'center' },
+    gap: 2,
+    mb: 3
+  }}
+>
+  <Typography
+    variant="h5"
+    fontWeight={700}
+    color="#1B5E20"
+  >
+    Proveedores
+  </Typography>
 
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: { xs: 'column', sm: 'row' },
+      gap: 1.5,
+      width: { xs: '100%', sm: 'auto' }
+    }}
+  >
+    <Button
+      fullWidth
+      variant="outlined"
+      startIcon={<ShoppingBagIcon />}
+      onClick={() => {
+        setError('');
+        setOpenCompra(true);
+      }}
+      sx={{
+        borderColor: '#2E7D32',
+        color: '#2E7D32',
+        borderRadius: 2
+      }}
+    >
+      Registrar compra
+    </Button>
+
+    <Button
+      fullWidth
+      variant="contained"
+      startIcon={<AddIcon />}
+      onClick={() => handleOpenProv()}
+      sx={{
+        bgcolor: '#2E7D32',
+        '&:hover': { bgcolor: '#1B5E20' },
+        borderRadius: 2
+      }}
+    >
+      Nuevo proveedor
+    </Button>
+  </Box>
+</Box>
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2, '& .Mui-selected': { color: '#2E7D32' }, '& .MuiTabs-indicator': { bgcolor: '#2E7D32' } }}>
         <Tab label="Proveedores" />
         <Tab label="Historial de compras" />

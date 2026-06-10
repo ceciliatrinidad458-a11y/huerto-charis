@@ -112,7 +112,8 @@ export default function Creditos() {
             <CircularProgress sx={{ color: '#2E7D32' }} />
           </Box>
         ) : (
-          <Table>
+          <Box sx={{ width: '100%', overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 900 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                 {['Cliente', 'Teléfono', 'Total crédito', 'Abonado', 'Saldo pendiente', 'Estado', 'Acciones'].map(h => (
@@ -177,6 +178,7 @@ export default function Creditos() {
               )}
             </TableBody>
           </Table>
+          </Box>
         )}
       </Card>
 
@@ -213,7 +215,8 @@ export default function Creditos() {
                 Ventas a crédito
               </Typography>
 
-              <Table size="small">
+              <Box sx={{ width: '100%', overflowX: 'auto' }}>
+                <Table size="small" sx={{ minWidth: 600 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                     <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>Folio</TableCell>
@@ -240,7 +243,8 @@ export default function Creditos() {
                 Abonos realizados
               </Typography>
 
-              <Table size="small">
+              <Box sx={{ width: '100%', overflowX: 'auto' }}>
+                <Table size="small" sx={{ minWidth: 700 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                     <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>Fecha</TableCell>
@@ -268,6 +272,8 @@ export default function Creditos() {
                   )}
                 </TableBody>
               </Table>
+            </Box>
+            </Box>
             </Box>
           )}
         </DialogContent>

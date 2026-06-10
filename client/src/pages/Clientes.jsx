@@ -66,19 +66,42 @@ export default function Clientes() {
 };    
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700} color="#1B5E20">Clientes</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}
-          sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, borderRadius: 2 }}>
-          Nuevo cliente
-        </Button>
-      </Box>
+      <Box
+  sx={{
+    display: 'flex',
+    flexDirection: { xs: 'column', md: 'row' },
+    justifyContent: 'space-between',
+    alignItems: { xs: 'stretch', md: 'center' },
+    gap: 2,
+    mb: 3
+  }}
+>
+  <Typography variant="h5" fontWeight={700} color="#1B5E20">
+    Clientes
+  </Typography>
+
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<AddIcon />}
+    onClick={() => handleOpen()}
+    sx={{
+      bgcolor: '#2E7D32',
+      '&:hover': { bgcolor: '#1B5E20' },
+      borderRadius: 2,
+      width: { xs: '100%', md: 'auto' }
+    }}
+  >
+    Nuevo cliente
+  </Button>
+</Box>
 
       <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress sx={{ color: '#2E7D32' }} /></Box>
         ) : (
-          <Table>
+          <Box sx={{ width: '100%', overflowX: 'auto' }}>
+             <Table sx={{ minWidth: 820 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                 {['Nombre', 'Teléfono', 'Tipo', 'Crédito activo', 'Saldo crédito', ''].map(h => (
@@ -112,6 +135,7 @@ export default function Clientes() {
               })}
             </TableBody>
           </Table>
+          </Box>
         )}
       </Card>
 

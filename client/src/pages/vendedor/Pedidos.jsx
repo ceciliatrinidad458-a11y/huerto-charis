@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import {
   Box, Typography, Button, Card, Table, TableHead, TableRow, TableCell, TableBody,
   Chip, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Grid, MenuItem, Autocomplete, IconButton, Divider, Alert, ButtonGroup, Tooltip, LinearProgress
+  TextField, Grid, MenuItem, Autocomplete, IconButton, Divider, Alert, ButtonGroup, Tooltip, LinearProgress, useMediaQuery
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -40,6 +41,8 @@ export default function VendedorPedidos() {
   const [nuevoAnticipo, setNuevoAnticipo] = useState('');
   const [form, setForm] = useState({ id_cliente: null, fecha_entrega: '', anticipo: '', notas: '' });
   const [items, setItems] = useState([]);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const load = () => {
     setLoading(true);
@@ -279,10 +282,23 @@ const pedidosFiltrados = pedidos.filter(p => {
 });
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+  sx={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: { xs: 'stretch', md: 'center' },
+    flexDirection: { xs: 'column', md: 'row' },
+    mb: 3,
+    gap: 2
+  }}
+>
         <Typography variant="h5" fontWeight={700} color="#1B5E20">Pedidos</Typography>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <ButtonGroup size="small">
+        <Box sx={{ display: 'flex', gap: 1.5, flexDirection: { xs: 'column', sm: 'row' } }}>
+          <ButtonGroup
+  size="small"
+  fullWidth={isMobile}
+  orientation={isMobile ? 'vertical' : 'horizontal'}
+>
             {[{ label: 'Día', value: 'dia' }, { label: 'Semana', value: 'semana' }, { label: 'Mes', value: 'mes' }].map(p => (
               <Button key={p.value} onClick={() => setPeriodo(p.value)}
                 variant={periodo === p.value ? 'contained' : 'outlined'}
@@ -291,10 +307,19 @@ const pedidosFiltrados = pedidos.filter(p => {
               </Button>
             ))}
           </ButtonGroup>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}
-            sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, borderRadius: 2 }}>
-            Nuevo pedido
-          </Button>
+          <Button
+  fullWidth={isMobile}
+  variant="contained"
+  startIcon={<AddIcon />}
+  onClick={() => setOpen(true)}
+  sx={{
+    bgcolor: '#2E7D32',
+    '&:hover': { bgcolor: '#1B5E20' },
+    borderRadius: 2
+  }}
+>
+  Nuevo pedido
+</Button>
         </Box>
       </Box>
       <TextField
@@ -312,7 +337,8 @@ const pedidosFiltrados = pedidos.filter(p => {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress sx={{ color: '#2E7D32' }} /></Box>
         ) : (
-          <Table>
+           <Box sx={{ width: '100%', overflowX: 'auto' }}>
+          <Table sx={{ minWidth: 880 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                 {['#', 'Cliente', 'Entrega', 'Total', 'Pagado', 'Saldo', 'Estado', 'Acciones'].map(h => (
@@ -391,7 +417,8 @@ const pedidosFiltrados = pedidos.filter(p => {
               )}
             </TableBody>
           </Table>
-        )}
+  </Box>
+)}
       </Card>
 
       {/* DIALOG NUEVO PEDIDO */}
@@ -443,7 +470,8 @@ const pedidosFiltrados = pedidos.filter(p => {
             renderInput={(params) => <TextField {...params} label="Agregar producto..." size="small" fullWidth />} noOptionsText="Sin resultados" />
 
           {items.length > 0 && (
-            <Table size="small" sx={{ mt: 2 }}>
+            <Box sx={{ width: '100%', overflowX: 'auto', mt: 2 }}>
+              <Table size="small" sx={{ minWidth: 560 }}>
               <TableHead>
                 <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                   <TableCell sx={{ fontWeight: 700, color: '#1B5E20', fontSize: 12 }}>Producto</TableCell>
@@ -475,6 +503,7 @@ const pedidosFiltrados = pedidos.filter(p => {
                 ))}
               </TableBody>
             </Table>
+            </Box>
           )}
 
           {items.length > 0 && (
@@ -504,7 +533,7 @@ const pedidosFiltrados = pedidos.filter(p => {
       </Dialog>
 
       {/* DIALOG PARA REGISTRAR ABONO */}
-      <Dialog open={abonoOpen} onClose={() => setAbonoOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog open={abonoOpen} onClose={() => setAbonoOpen(false)} fullScreen={isMobile} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700, color: '#1B5E20' }}>Registrar Abono</DialogTitle>
         <DialogContent>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -544,7 +573,7 @@ const pedidosFiltrados = pedidos.filter(p => {
       </Dialog>
 
       {/* DIALOG PARA EDITAR ANTICIPO */}
-      <Dialog open={editAnticipoOpen} onClose={() => setEditAnticipoOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog open={editAnticipoOpen} onClose={() => setEditAnticipoOpen(false)} fullScreen={isMobile} maxWidth="md" fullWidth PaperProps={{ sx: { md: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700, color: '#1B5E20' }}>Editar Anticipo</DialogTitle>
         <DialogContent>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -582,7 +611,7 @@ const pedidosFiltrados = pedidos.filter(p => {
       </Dialog>
 
       {/* DIALOG DETALLE PEDIDO */}
-      <Dialog open={detalleOpen} onClose={() => setDetalleOpen(false)} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog open={detalleOpen} onClose={() => setDetalleOpen(false)}  fullScreen={isMobile} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700, color: '#1B5E20' }}>Detalle Pedido #{pedidoDetalle?.id}</DialogTitle>
         <DialogContent>
           {pedidoDetalle && (
@@ -594,7 +623,8 @@ const pedidosFiltrados = pedidos.filter(p => {
                 <Grid item xs={6}><Typography fontSize={13}><strong>Notas:</strong> {pedidoDetalle.notas || '—'}</Typography></Grid>
               </Grid>
               
-              <Table size="small">
+             <Box sx={{ width: '100%', overflowX: 'auto' }}>
+  <Table size="small" sx={{ minWidth: 520 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                     <TableCell sx={{ fontWeight: 700, color: '#1B5E20', fontSize: 12 }}>Planta</TableCell>
@@ -614,6 +644,8 @@ const pedidosFiltrados = pedidos.filter(p => {
                   ))}
                 </TableBody>
               </Table>
+              </Box>
+            
               
               <Box sx={{ mt: 2, p: 2, bgcolor: '#F9FBF7', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -671,6 +703,7 @@ const pedidosFiltrados = pedidos.filter(p => {
 <Dialog
   open={ticketPedidoOpen}
   onClose={() => setTicketPedidoOpen(false)}
+   fullScreen={isMobile}
   maxWidth="sm"
   fullWidth
   PaperProps={{ sx: { borderRadius: 3 } }}

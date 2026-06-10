@@ -135,7 +135,16 @@ const generarRespaldo = async () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+  sx={{
+    display: 'flex',
+    flexDirection: { xs: 'column', md: 'row' },
+    justifyContent: 'space-between',
+    alignItems: { xs: 'stretch', md: 'center' },
+    gap: 2,
+    mb: 3
+  }}
+>
         <Box>
           <Typography variant="h5" fontWeight={700} color="#1B5E20">
             Buen día, {usuario.nombre?.split(' ')[0]} 👋
@@ -144,7 +153,7 @@ const generarRespaldo = async () => {
             {new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </Typography>
         </Box>
-<Box sx={{ display: 'flex', gap: 1 }}>
+<Box sx={{ display: 'flex', gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
   <Button
     variant="contained"
     onClick={generarRespaldo}
@@ -327,7 +336,8 @@ const generarRespaldo = async () => {
         Aún no se han generado respaldos
       </Typography>
     ) : (
-      <Table size="small">
+      <Box sx={{ width: '100%', overflowX: 'auto' }}>
+    <Table size="small" sx={{ minWidth: 760 }}>
         <TableHead>
           <TableRow sx={{ bgcolor: '#F1F8E9' }}>
             <TableCell sx={{ fontWeight: 700, color: '#1B5E20' }}>Archivo</TableCell>
@@ -367,6 +377,7 @@ const generarRespaldo = async () => {
           ))}
         </TableBody>
       </Table>
+      </Box>
     )}
   </CardContent>
 </Card>

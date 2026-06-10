@@ -245,7 +245,8 @@ export default function VendedorVentas() {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress sx={{ color: '#2E7D32' }} /></Box>
         ) : (
-          <Table>
+  <Box sx={{ width: '100%', overflowX: 'auto' }}>
+    <Table sx={{ minWidth: 760 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                 {['#', 'Cliente', 'Vendedor', 'Fecha', 'Pago', 'Total'].map(h => (
@@ -279,8 +280,9 @@ export default function VendedorVentas() {
                 </TableRow>
               )}
             </TableBody>
-          </Table>
-        )}
+              </Table>
+  </Box>
+)}
       </Card>
 
       {/* DIALOG DETALLE VENTA */}
@@ -299,7 +301,9 @@ export default function VendedorVentas() {
                 <Typography variant="body2"><strong>Fecha:</strong> {new Date(ventaDetalle.fecha).toLocaleString('es-MX')}</Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
-              <Table size="small">
+              <Box sx={{ width: '100%', overflowX: 'auto' }}></Box>
+              <Table size="small" sx={{ minWidth: 520 }}>
+                
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                     <TableCell sx={{ fontWeight: 700, color: '#1B5E20', fontSize: 12 }}>Tipo de planta</TableCell>
