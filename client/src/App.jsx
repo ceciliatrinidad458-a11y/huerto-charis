@@ -2,7 +2,7 @@
   import Login from './pages/Login.jsx';
   import AdminLayout from './components/AdminLayout.jsx';
   import VendedorLayout from './components/VendedorLayout.jsx';
-
+  import Creditos from './pages/admin/Creditos.jsx';
   // Admin pages
   import Dashboard from './pages/Dashboard.jsx';
   import Productos from './pages/Productos.jsx';
@@ -56,6 +56,7 @@
             <Route path="clientes" element={<Clientes />} />
             <Route path="ventas" element={<Ventas />} />
             <Route path="ventas/nueva" element={<NuevaVenta />} />
+            <Route path="creditos" element={<Creditos />} />
             <Route path="reportes" element={<Reportes />} />
             <Route path="proveedores" element={<Proveedores />} />
           </Route>

@@ -9,11 +9,13 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import CreditScoreIcon from '@mui/icons-material/CreditScore';
 
 const W = 220;
 const navItems = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: <DashboardIcon /> },
   { label: 'Ventas', path: '/admin/ventas', icon: <PointOfSaleIcon /> },
+  { label: 'Créditos', path: '/admin/creditos', icon: <CreditScoreIcon /> },
   { label: 'Pedidos', path: '/admin/pedidos', icon: <AssignmentIcon /> },
   { label: 'Clientes', path: '/admin/clientes', icon: <PeopleIcon /> },
   { label: 'Proveedores', path: '/admin/proveedores', icon: <LocalShippingIcon /> },

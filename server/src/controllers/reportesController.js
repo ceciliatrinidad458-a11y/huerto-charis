@@ -41,11 +41,11 @@ const getResumen = async (req, res) => {
   FROM (
     SELECT 
       COUNT(*) AS total_ventas,
-      COALESCE(SUM(total), 0) AS ingresos_total,
-      COALESCE(SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END), 0) AS contado,
-      COALESCE(SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END), 0) AS credito
-    FROM ventas 
-    WHERE fecha >= $1
+      COALESCE(SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END), 0) AS ingresos_total,
+COALESCE(SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END), 0) AS contado,
+0 AS credito
+FROM ventas 
+WHERE fecha >= $1
 
     UNION ALL
 
@@ -58,6 +58,15 @@ const getResumen = async (req, res) => {
 JOIN pedidos p ON a.id_pedido = p.id
 WHERE a.fecha >= $1
 AND p.estado <> 'cancelado'
+UNION ALL
+
+SELECT
+  COUNT(*) AS total_ventas,
+  COALESCE(SUM(ac.monto), 0) AS ingresos_total,
+  COALESCE(SUM(ac.monto), 0) AS contado,
+  0 AS credito
+FROM abonos_credito ac
+WHERE ac.fecha >= $1
     
   ) movimientos
 `, [fechaInicio]);
@@ -127,8 +136,9 @@ const getDashboard = async (req, res) => {
     COALESCE(SUM(total), 0) AS total
   FROM (
     SELECT COUNT(*) AS count, COALESCE(SUM(total), 0) AS total
-    FROM ventas
-    WHERE fecha >= $1
+FROM ventas
+WHERE fecha >= $1
+AND tipo_pago = 'contado'
 
     UNION ALL
 
@@ -137,8 +147,14 @@ const getDashboard = async (req, res) => {
     JOIN pedidos p ON a.id_pedido = p.id
     WHERE a.fecha >= $1
     AND p.estado <> 'cancelado'
-  ) movimientos
-  `,
+
+    UNION ALL
+
+SELECT COUNT(*) AS count, COALESCE(SUM(ac.monto), 0) AS total
+FROM abonos_credito ac
+WHERE ac.fecha >= $1
+
+  ) movimientos`,
   [hoy]
 );
     const creditosActivosResult = await db.query(
