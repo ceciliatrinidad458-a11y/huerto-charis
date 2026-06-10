@@ -269,8 +269,9 @@ const handleVerDetalleCompra = async (compra) => {
       ) : (
         <>
           {tab === 0 && (
-            <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-              <Table>
+  <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+    <Box sx={{ width: '100%', overflowX: 'auto' }}>
+      <Table sx={{ minWidth: 820 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                     {['Nombre', 'Teléfono', 'Correo', 'Dirección', ''].map(h => (
@@ -296,12 +297,14 @@ const handleVerDetalleCompra = async (compra) => {
                   )}
                 </TableBody>
               </Table>
+                  </Box>
             </Card>
           )}
 
           {tab === 1 && (
-            <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-              <Table>
+  <Card sx={{ borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+    <Box sx={{ width: '100%', overflowX: 'auto' }}>
+      <Table sx={{ minWidth: 850 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                     {['#', 'Proveedor', 'Registró', 'Fecha', 'Total', 'Notas'].map(h => (
@@ -359,13 +362,16 @@ const handleVerDetalleCompra = async (compra) => {
             ))}
           </TableBody>
         </Table>
+        
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
           <Typography variant="h6" fontWeight={700} color="#1B5E20">
             Total: {fmt(compraDetalle.total)}
           </Typography>
         </Box>
+        
       </Box>
+      
     )}
   </DialogContent>
 
@@ -374,7 +380,7 @@ const handleVerDetalleCompra = async (compra) => {
       Cerrar
     </Button>
   </DialogActions>
-</Dialog>n
+</Dialog>
                       <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>#{c.id}</TableCell>
                       <TableCell sx={{ fontWeight: 500 }}>{c.proveedor_nombre}</TableCell>
                       <TableCell>{c.usuario_nombre}</TableCell>
@@ -388,7 +394,9 @@ const handleVerDetalleCompra = async (compra) => {
                   )}
                 </TableBody>
               </Table>
-            </Card>
+            </Box>
+          </Card>
+            
           )}
         </>
       )}
@@ -556,7 +564,8 @@ const handleVerDetalleCompra = async (compra) => {
             renderInput={(params) => <TextField {...params} label="Buscar producto del inventario..." size="small" fullWidth />} noOptionsText="Sin resultados" />
 
           {items.length > 0 && (
-            <Table size="small" sx={{ mt: 2 }}>
+  <Box sx={{ width: '100%', overflowX: 'auto', mt: 2 }}>
+    <Table size="small" sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                   <TableCell sx={{ fontWeight: 700, color: '#1B5E20', fontSize: 12 }}>Producto</TableCell>
@@ -591,6 +600,7 @@ const handleVerDetalleCompra = async (compra) => {
                 ))}
               </TableBody>
             </Table>
+              </Box>
           )}
 
           {items.length > 0 && (

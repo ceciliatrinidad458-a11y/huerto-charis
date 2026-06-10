@@ -17,11 +17,19 @@ export default function VendedorInventario() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700} color="#1B5E20">Inventario</Typography>
+<Box
+  sx={{
+    display: 'flex',
+    flexDirection: { xs: 'column', md: 'row' },
+    justifyContent: 'space-between',
+    alignItems: { xs: 'stretch', md: 'center' },
+    gap: 2,
+    mb: 3
+  }}
+>        <Typography variant="h5" fontWeight={700} color="#1B5E20">Inventario</Typography>
         <TextField size="small" placeholder="Buscar producto..." value={busqueda} onChange={e => setBusqueda(e.target.value)}
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-          sx={{ width: 240 }} />
+          sx={{ width: { xs: '100%', md: 240 } }} />
       </Box>
       <Card
   sx={{
@@ -76,7 +84,8 @@ export default function VendedorInventario() {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress sx={{ color: '#2E7D32' }} /></Box>
         ) : (
-          <Table>
+           <Box sx={{ width: '100%', overflowX: 'auto' }}>
+    <Table sx={{ minWidth: 820 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                 {['Producto', 'Disponible', 'P. Menudista', 'P. Mayorista', 'P. Especial', 'Estado'].map(h => (
@@ -102,8 +111,9 @@ export default function VendedorInventario() {
                 <TableRow><TableCell colSpan={6} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>Sin resultados</TableCell></TableRow>
               )}
             </TableBody>
-          </Table>
-        )}
+              </Table>
+            </Box>
+            )}
       </Card>
     </Box>
   );

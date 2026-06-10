@@ -230,7 +230,8 @@ export default function VendedorVentas() {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress sx={{ color: '#2E7D32' }} /></Box>
         ) : (
-          <Table>
+  <Box sx={{ width: '100%', overflowX: 'auto' }}>
+    <Table sx={{ minWidth: 820 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                 {['#', 'Cliente', 'Vendedor', 'Fecha', 'Pago', 'Total'].map(h => (
@@ -273,6 +274,7 @@ export default function VendedorVentas() {
               )}
             </TableBody>
           </Table>
+           </Box>
         )}
       </Card>
 
@@ -293,7 +295,8 @@ export default function VendedorVentas() {
                 <Typography variant="body2"><strong>Fecha:</strong> {new Date(ventaDetalle.fecha).toLocaleString('es-MX')}</Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
-              <Table size="small">
+              <Box sx={{ width: '100%', overflowX: 'auto' }}>
+  <Table size="small" sx={{ minWidth: 520 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                     <TableCell sx={{ fontWeight: 700, color: '#1B5E20', fontSize: 12 }}>Producto</TableCell>
@@ -310,13 +313,16 @@ export default function VendedorVentas() {
                       <TableCell>{fmt(d.precio_unitario)}</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#2E7D32' }}>{fmt(d.precio_unitario * d.cantidad)}</TableCell>
                     </TableRow>
+                    
                   ))}
                 </TableBody>
               </Table>
+              </Box>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                 <Typography variant="h6" fontWeight={700} color="#2E7D32">Total: {fmt(ventaDetalle.total)}</Typography>
               </Box>
             </Box>
+            
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>

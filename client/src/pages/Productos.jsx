@@ -140,13 +140,35 @@ const handleDelete = async (id) => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700} color="#1B5E20">Inventario</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}
-          sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, borderRadius: 2 }}>
-          Nuevo producto
-        </Button>
-      </Box>
+      <Box
+  sx={{
+    display: 'flex',
+    flexDirection: { xs: 'column', md: 'row' },
+    justifyContent: 'space-between',
+    alignItems: { xs: 'stretch', md: 'center' },
+    gap: 2,
+    mb: 3
+  }}
+>
+  <Typography variant="h5" fontWeight={700} color="#1B5E20">
+    Inventario
+  </Typography>
+
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<AddIcon />}
+    onClick={() => handleOpen()}
+    sx={{
+      bgcolor: '#2E7D32',
+      '&:hover': { bgcolor: '#1B5E20' },
+      borderRadius: 2,
+      width: { xs: '100%', md: 'auto' }
+    }}
+  >
+    Nuevo producto
+  </Button>
+</Box>
       <Card
   sx={{
     mb: 2.5,
@@ -215,7 +237,8 @@ const handleDelete = async (id) => {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress sx={{ color: '#2E7D32' }} /></Box>
         ) : (
-          <Table>
+  <Box sx={{ width: '100%', overflowX: 'auto' }}>
+    <Table sx={{ minWidth: 900 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F1F8E9' }}>
                 {['Producto', 'Cantidad', 'P. Menudista', 'P. Mayorista', 'P. Especial', 'Estado', ''].map(h => (
@@ -250,6 +273,7 @@ const handleDelete = async (id) => {
               ))}
             </TableBody>
           </Table>
+           </Box>
         )}
       </Card>
 
