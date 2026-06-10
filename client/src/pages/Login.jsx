@@ -3,7 +3,6 @@ import {
   Box, Card, CardContent, TextField, Button, Typography, Alert,
   MenuItem, Tabs, Tab, Divider
 } from '@mui/material';
-import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import { useNavigate } from 'react-router-dom';
 import api from '../api.js';
 
@@ -60,38 +59,124 @@ export default function Login() {
     '& .MuiInputLabel-root.Mui-focused': { color: '#2E7D32' },
   };
 
-  return (
-    <Box sx={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      bgcolor: '#f1f8e9',
-      backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(76,175,80,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(27,94,32,0.06) 0%, transparent 50%)'
-    }}>
-      <Card sx={{ width: 400, borderRadius: 3, boxShadow: '0 8px 32px rgba(27,94,32,0.12)' }}>
-        <CardContent sx={{ p: 4 }}>
+const buttonSx = {
+  bgcolor: '#166534',
+  py: 1.5,
+  borderRadius: 3,
+  fontWeight: 800,
+  fontSize: '0.95rem',
+  boxShadow: '0 8px 20px rgba(22,101,52,.25)',
+  '&:hover': {
+    bgcolor: '#14532D'
+  }
+};
 
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-             <Box
-  component="img"
-  src="/logo-corte-caja.png"
-  alt="Viveros Charis"
+const linkSx = {
+  color: '#2E7D32',
+  cursor: 'pointer',
+  fontWeight: 900
+};
+
+ return (
+  <Box
+    sx={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      px: { xs: 2, sm: 3 },
+      py: { xs: 3, md: 5 },
+      bgcolor: '#F4F7F1'
+    }}
+  >
+    <Card
   sx={{
-    width: 42,
-    height: 42,
-    borderRadius: 2,
+    width: '100%',
+    maxWidth: 1050,
+    minHeight: 650,
+    borderRadius: 8,
+    overflow: 'hidden',
+    display: 'flex',
     bgcolor: '#fff',
-    p: 0.5
+    boxShadow: '0 25px 80px rgba(0,0,0,0.12)'
   }}
-/>
-            <Typography variant="h5" fontWeight={700} color="#1B5E20">Viveros Charis</Typography>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>Sistema de Gestión de Ventas</Typography>
+>
+      <Box
+        sx={{
+          width: '48%',
+          display: { xs: 'none', md: 'block' },
+          backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.08)), url("/login-orquidea.jpg")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderTopRightRadius: 80,
+          borderBottomRightRadius: 70
+        }}
+      />
+
+      <Box
+        sx={{
+          flex: 1,
+          bgcolor: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: { xs: 3, sm: 6 },
+          py: 5
+        }}
+      >
+        <Box sx={{ width: '100%', maxWidth: 380 }}>
+          <Box sx={{ textAlign: 'center', mb: 3 }}>
+            <Box
+              component="img"
+              src="/logo-corte-caja.png"
+              alt="Viveros Charis"
+              sx={{
+                width: 52,
+                height: 52,
+                objectFit: 'contain',
+                mb: 1
+              }}
+            />
+
+            <Typography
+              variant="h4"
+              fontWeight={900}
+              color="#0B4F1F"
+              sx={{ letterSpacing: '-0.8px' }}
+            >
+              Viveros Charis
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Sistema de Gestión de Ventas
+            </Typography>
           </Box>
 
-          <Tabs value={tab} onChange={handleTab} variant="fullWidth" sx={{
-            mb: 3,
-            '& .MuiTab-root': { fontWeight: 600, fontSize: 13 },
-            '& .Mui-selected': { color: '#2E7D32' },
-            '& .MuiTabs-indicator': { bgcolor: '#2E7D32' },
-          }}>
+          <Tabs
+            value={tab}
+            onChange={handleTab}
+            variant="fullWidth"
+            sx={{
+              mb: 3,
+              minHeight: 40,
+              bgcolor: '#F3F7F1',
+              borderRadius: 3,
+              p: 0.5,
+              '& .MuiTab-root': {
+                minHeight: 34,
+                borderRadius: 2.5,
+                fontWeight: 800,
+                fontSize: 12,
+                textTransform: 'none'
+              },
+              '& .Mui-selected': {
+                color: '#0B4F1F',
+                bgcolor: '#FFFFFF',
+                boxShadow: '0 3px 10px rgba(0,0,0,0.06)'
+              },
+              '& .MuiTabs-indicator': { display: 'none' }
+            }}
+          >
             <Tab label="Iniciar sesión" />
             <Tab label="Registrarse" />
           </Tabs>
@@ -101,18 +186,50 @@ export default function Login() {
 
           {tab === 0 && (
             <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField label="Correo electrónico" type="email" size="small" fullWidth required
-                value={loginForm.correo} onChange={e => setLoginForm({ ...loginForm, correo: e.target.value })} sx={inputSx} />
-              <TextField label="Contraseña" type="password" size="small" fullWidth required
-                value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} sx={inputSx} />
-              <Button type="submit" variant="contained" fullWidth disabled={loading}
-                sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, mt: 1, py: 1.3, borderRadius: 2, fontSize: 15 }}>
-                {loading ? 'Iniciando sesión...' : 'Ingresar'}
+              <Typography variant="h6" fontWeight={800} color="#1B5E20">
+                Bienvenido de nuevo
+              </Typography>
+
+              <Typography variant="body2" color="text.secondary" sx={{ mt: -1, mb: 1 }}>
+                Inicia sesión para continuar
+              </Typography>
+
+              <TextField
+                label="Correo electrónico"
+                placeholder="tu@correo.com"
+                type="email"
+                size="small"
+                fullWidth
+                required
+                value={loginForm.correo}
+                onChange={e => setLoginForm({ ...loginForm, correo: e.target.value })}
+                sx={inputSx}
+              />
+
+              <TextField
+                label="Contraseña"
+                type="password"
+                size="small"
+                fullWidth
+                required
+                value={loginForm.password}
+                onChange={e => setLoginForm({ ...loginForm, password: e.target.value })}
+                sx={inputSx}
+              />
+
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                disabled={loading}
+                sx={buttonSx}
+              >
+                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
               </Button>
-              <Divider />
-              <Typography variant="caption" color="text.secondary" textAlign="center">
+
+              <Typography variant="caption" color="text.secondary" textAlign="center" mt={1}>
                 ¿No tienes cuenta?{' '}
-                <Box component="span" sx={{ color: '#2E7D32', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleTab(null, 1)}>
+                <Box component="span" sx={linkSx} onClick={() => handleTab(null, 1)}>
                   Regístrate aquí
                 </Box>
               </Typography>
@@ -121,40 +238,88 @@ export default function Login() {
 
           {tab === 1 && (
             <Box component="form" onSubmit={handleRegister} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField label="Nombre completo" size="small" fullWidth required
-                value={regForm.nombre} onChange={e => setRegForm({ ...regForm, nombre: e.target.value })} sx={inputSx} />
-              <TextField label="Correo electrónico" type="email" size="small" fullWidth required
-                value={regForm.correo} onChange={e => setRegForm({ ...regForm, correo: e.target.value })} sx={inputSx} />
-              <TextField select label="Rol" size="small" fullWidth
-                value={regForm.rol} onChange={e => setRegForm({ ...regForm, rol: e.target.value })} sx={inputSx}>
+              <Typography variant="h6" fontWeight={800} color="#1B5E20">
+                Crear cuenta
+              </Typography>
+
+              <TextField
+                label="Nombre completo"
+                size="small"
+                fullWidth
+                required
+                value={regForm.nombre}
+                onChange={e => setRegForm({ ...regForm, nombre: e.target.value })}
+                sx={inputSx}
+              />
+
+              <TextField
+                label="Correo electrónico"
+                type="email"
+                size="small"
+                fullWidth
+                required
+                value={regForm.correo}
+                onChange={e => setRegForm({ ...regForm, correo: e.target.value })}
+                sx={inputSx}
+              />
+
+              <TextField
+                select
+                label="Rol"
+                size="small"
+                fullWidth
+                value={regForm.rol}
+                onChange={e => setRegForm({ ...regForm, rol: e.target.value })}
+                sx={inputSx}
+              >
                 <MenuItem value="vendedor">Vendedor</MenuItem>
-                {!adminExiste && (
-  <MenuItem value="admin">Administrador</MenuItem>
-)}
+                {!adminExiste && <MenuItem value="admin">Administrador</MenuItem>}
               </TextField>
-              <TextField label="Contraseña" type="password" size="small" fullWidth required
-                value={regForm.password} onChange={e => setRegForm({ ...regForm, password: e.target.value })} sx={inputSx}
-                helperText="Mínimo 6 caracteres" />
-              <TextField label="Confirmar contraseña" type="password" size="small" fullWidth required
-                value={regForm.confirmar} onChange={e => setRegForm({ ...regForm, confirmar: e.target.value })} sx={inputSx}
+
+              <TextField
+                label="Contraseña"
+                type="password"
+                size="small"
+                fullWidth
+                required
+                value={regForm.password}
+                onChange={e => setRegForm({ ...regForm, password: e.target.value })}
+                sx={inputSx}
+                helperText="Mínimo 6 caracteres"
+              />
+
+              <TextField
+                label="Confirmar contraseña"
+                type="password"
+                size="small"
+                fullWidth
+                required
+                value={regForm.confirmar}
+                onChange={e => setRegForm({ ...regForm, confirmar: e.target.value })}
+                sx={inputSx}
                 error={regForm.confirmar.length > 0 && regForm.password !== regForm.confirmar}
-                helperText={regForm.confirmar.length > 0 && regForm.password !== regForm.confirmar ? 'Las contraseñas no coinciden' : ''} />
-              <Button type="submit" variant="contained" fullWidth disabled={loading}
-                sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, mt: 1, py: 1.3, borderRadius: 2, fontSize: 15 }}>
+                helperText={
+                  regForm.confirmar.length > 0 && regForm.password !== regForm.confirmar
+                    ? 'Las contraseñas no coinciden'
+                    : ''
+                }
+              />
+
+              <Button type="submit" variant="contained" fullWidth disabled={loading} sx={buttonSx}>
                 {loading ? 'Creando cuenta...' : 'Crear cuenta'}
               </Button>
-              <Divider />
-              <Typography variant="caption" color="text.secondary" textAlign="center">
+
+              <Typography variant="caption" color="text.secondary" textAlign="center" mt={1}>
                 ¿Ya tienes cuenta?{' '}
-                <Box component="span" sx={{ color: '#2E7D32', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleTab(null, 0)}>
+                <Box component="span" sx={linkSx} onClick={() => handleTab(null, 0)}>
                   Inicia sesión
                 </Box>
               </Typography>
             </Box>
           )}
-
-        </CardContent>
-      </Card>
-    </Box>
-  );
+        </Box>
+      </Box>
+    </Card>
+  </Box>
+);
 }
