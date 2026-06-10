@@ -139,10 +139,14 @@ export default function VendedorVentas() {
           <Typography variant="h5" fontWeight={700} color="#1B5E20">Historial de Ventas</Typography>
           <Typography variant="body2" color="text.secondary">Doble clic sobre una venta para ver detalles</Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/admin/ventas/nueva')}
-          sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, borderRadius: 2 }}>
-          Nueva venta
-        </Button>
+        <Button
+  variant="contained"
+  startIcon={<AddIcon />}
+  onClick={() => navigate('/vendedor/ventas/nueva')}
+  sx={{ bgcolor: '#2E7D32', '&:hover': { bgcolor: '#1B5E20' }, borderRadius: 2 }}
+>
+  Nueva venta
+</Button>
       </Box>
 
       {/* Panel de filtros */}
